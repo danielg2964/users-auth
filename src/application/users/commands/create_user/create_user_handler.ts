@@ -5,7 +5,6 @@ import type { SaveUser, UserExistsByEmail, UserExistsByUuid } from "#application
 import { UserEntity } from "#domain/users/entities/user.entity.ts";
 import { UserEmail } from "#domain/users/user.email.ts";
 import { UserPassword } from "#domain/users/user.password.ts";
-import { end, pipe } from "#functions/pipe.ts";
 import { Left, Right, type Either } from "#types/either.ts";
 import type { Failure } from "#types/failure.ts";
 import type { CreateUserCommand } from "./create_user_command.ts";
@@ -30,8 +29,7 @@ export const createUserHandler
             (genSalt ()) 
             (hashString))
           (command.type)
-          (command.father_uuid))
-          )
+          (command.father_uuid)))
     : Right (FATHER_DOESNT_EXIST)
   : Right (EMAIL_IN_USE)
 
@@ -40,6 +38,4 @@ const createUserPassword
   (salt : string) =>
   (hashString : HashString) : UserPassword =>
   UserPassword (hashString (salt) (plain)) (salt)
-
-
 
