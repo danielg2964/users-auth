@@ -8,8 +8,8 @@ type PairMark
 
 export type Pair < T, B >
 = Marked < PairMark > & {
-    left : T
-  , right : B
+    get left () : T
+  , get right () : B
   }
 
 export const Pair 

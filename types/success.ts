@@ -8,9 +8,9 @@ type SuccessMark
 
 export type Success < T >
 = Marked < SuccessMark > & {
-    value: T
-  , message: string
-  , code: string
+    get value (): T
+  , get message (): string
+  , get code (): string
   }
 
 export const Success : < T > (value : T) => (message : string) => (code : string) => Success < T >

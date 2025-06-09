@@ -7,10 +7,10 @@ type FailureMark
 = typeof FailureMark
 
 export type Failure 
-= {
-    message : string
-  , code : string
-  } & Marked < FailureMark >
+= Marked < FailureMark > & {
+    get message () : string
+  , get code () : string
+  } 
 
 export const Failure : (message : string) => (code : string) => Failure
 = (message : string) =>

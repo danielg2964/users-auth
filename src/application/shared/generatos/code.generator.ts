@@ -1,0 +1,3 @@
+export type GenerateCode
+= () => string
+

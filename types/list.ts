@@ -9,8 +9,8 @@ type ListMark
 
 export type List < T >
 = Marked < ListMark > & {
-    head : T
-  , tail : Maybe < List < T > >
+    get head () : T
+  , get tail () : Maybe < List < T > >
   }
 
 const createList : < T > (head : T) => (tail : Maybe < List < T > >) => List < T >

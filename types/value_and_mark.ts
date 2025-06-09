@@ -8,7 +8,7 @@ export type ValueAndMarkMark
 
 export type ValueAndMark < TValue, TMark extends symbol >
 = Marked < TMark > & {
-    value : TValue
+    get value () : TValue
   }
 
 export const ValueAndMark
