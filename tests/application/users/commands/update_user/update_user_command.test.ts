@@ -85,7 +85,6 @@ describe ('UpdateUserHandler Test', () => {
     = faker.string.alphanumeric (12)
     genSalt.mock.mockImplementation (() => salt)
 
-
     const hash
     = faker.string.alphanumeric (12)
     hashString.mock.mockImplementation ($salt => plain => {
@@ -99,7 +98,6 @@ describe ('UpdateUserHandler Test', () => {
 
     saveUser.mock.mockImplementation (async user => {
       assert.strictEqual (user.uuid, command.uuid)
-
 
       assert.strictEqual (user.email.value, (command.email as Just < string >).value)
       assert.strictEqual (user.email.is_verified, false)

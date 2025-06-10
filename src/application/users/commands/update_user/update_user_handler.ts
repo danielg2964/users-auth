@@ -9,7 +9,7 @@ import { match, otherwise } from "#functions/match.ts";
 import { end, pipe } from "#functions/pipe.ts";
 import { Left, Right, type Either } from "#types/either.ts";
 import type { Failure } from "#types/failure.ts";
-import { isJust, Just } from "#types/maybe.ts";
+import { isJust } from "#types/maybe.ts";
 
 export type UpdateUserHandler
 = (command : UpdateUserCommand) => Promise < Either < UserEntity, Failure > >
