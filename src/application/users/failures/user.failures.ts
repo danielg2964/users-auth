@@ -4,5 +4,8 @@ export const EMAIL_IN_USE : Failure
 = Failure ('Email is in use') ('EMAIL_IN_USE')
 
 export const FATHER_DOESNT_EXIST : Failure
-= Failure ('Father doesnt exist') ('FATHEER_DOESNT_EXIST')
+= Failure ('Father doesnt exist') ('FATHER_DOESNT_EXIST')
+
+export const USER_NOT_FOUND : Failure
+= Failure ('User not found') ('USER_NOT_FOUND')
 
