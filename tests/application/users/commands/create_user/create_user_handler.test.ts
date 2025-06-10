@@ -7,9 +7,10 @@ import { GenerateUuid } from "#application/shared/generatos/uuid.generator.ts";
 import { CreateUserCommand } from '#application/users/commands/create_user/create_user_command.ts'
 import { createUserHandler, type CreateUserHandler } from '#application/users/commands/create_user/create_user_handler.ts'
 import { SaveUser, UserExistsByEmail, UserExistsByUuid } from '#application/users/user.repository.ts'
-import { isLeft, isRight } from '#types/either.ts'
+import { isLeft, isRight, Left } from '#types/either.ts'
 import { EMAIL_IN_USE, FATHER_DOESNT_EXIST } from '#application/users/failures/user.failures.ts'
 import { GenSalt, HashString } from '#application/shared/hasher.ts'
+import type { UserEntity } from '#domain/users/entities/user.entity.ts';
 
 describe ('CreateUserHandler Test', () => {
   const command : CreateUserCommand
@@ -56,14 +57,12 @@ describe ('CreateUserHandler Test', () => {
         (saveUser)
   })
 
-
   it ('should return EMAIL_IN_USE Failure', async () => {
-    userExistsByEmail.mock.mockImplementationOnce 
-      (async email => {
-        assert.strictEqual (email, command.email)
+    userExistsByEmail.mock.mockImplementationOnce (async email => {
+      assert.strictEqual (email, command.email)
 
-        return true
-      })
+      return true
+    })
 
     const result
     = await handler (command)
@@ -74,13 +73,11 @@ describe ('CreateUserHandler Test', () => {
   })
 
   it ('should return FATHER_DOESNT_EXIST Failure', async () => {
-    
-    userExistsByUuid.mock.mockImplementationOnce
-      (async uuid => {
-        assert.strictEqual (uuid, command.father_uuid)
+    userExistsByUuid.mock.mockImplementationOnce (async uuid => {
+      assert.strictEqual (uuid, command.father_uuid)
 
-        return false
-      })
+      return false
+    })
 
     const result
     = await handler (command)
@@ -94,41 +91,46 @@ describe ('CreateUserHandler Test', () => {
     const salt
     = faker.string.alpha ()
 
-    genSalt.mock.mockImplementation
-      (() => salt)
+    genSalt.mock.mockImplementation (() => salt)
 
     const hash
     = faker.string.alpha ()
 
-    hashString.mock.mockImplementation
-      ($salt => plain => {
-        assert.strictEqual ($salt, salt)
-        assert.strictEqual (plain, command.password)
+    hashString.mock.mockImplementation ($salt => plain => {
+      assert.strictEqual ($salt, salt)
+      assert.strictEqual (plain, command.password)
 
-        return hash
-      })
+      return hash
+    })
 
     const uuid
     = faker.string.uuid ()
 
-    generateUuid.mock.mockImplementation
-      (() => uuid)
+    generateUuid.mock.mockImplementation (() => uuid)
 
-    saveUser.mock.mockImplementation
-      (async user => {
-        assert.strictEqual (user.uuid, uuid)
-        assert.strictEqual (user.email.value, command.email)
-        assert.strictEqual (user.email.is_verified, false)
-        assert.strictEqual (user.type, command.type)
-        assert.strictEqual (user.father_uuid, command.father_uuid)
+    let user_saved : UserEntity
 
-        return user
-      })
+    saveUser.mock.mockImplementation (async user => {
+      assert.strictEqual (user.uuid, uuid)
+      assert.strictEqual (user.email.value, command.email)
+      assert.strictEqual (user.email.is_verified, false)
+      assert.strictEqual (user.type, command.type)
+      assert.strictEqual (user.father_uuid, command.father_uuid)
+
+      user_saved = user
+
+      return user
+    })
 
     const result
     = await handler (command)
 
     assert.strictEqual (isLeft (result), true)
+
+    const left
+    = result as Left < UserEntity >
+
+    assert.deepStrictEqual (left.value, user_saved!)
   })
 })
 
