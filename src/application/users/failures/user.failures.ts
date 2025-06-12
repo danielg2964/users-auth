@@ -9,3 +9,6 @@ export const FATHER_DOESNT_EXIST : Failure
 export const USER_NOT_FOUND : Failure
 = Failure ('User not found') ('USER_NOT_FOUND')
 
+export const REQUESTER_NOT_FOUND : Failure
+= Failure ('Requester not found') ('REQUESTER_NOT_FOUND')
+

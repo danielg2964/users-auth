@@ -10,7 +10,7 @@ export type Right < TRight >
 = ValueAndMark < TRight, RightMark >
 
 export const Right
-= < TLeft, TRight > (value : TRight) : Either < TLeft, TRight > =>
+= < TRight > (value : TRight) : Right < TRight > =>
   ValueAndMark (value) (RightMark)
 
 export const isRight
@@ -34,7 +34,7 @@ export type Left < TLeft >
 = ValueAndMark < TLeft, LeftMark >
 
 export const Left
-= < TLeft, TRight > (value : TLeft) : Either < TLeft, TRight > =>
+= < TLeft > (value : TLeft) : Left < TLeft > =>
   ValueAndMark (value) (LeftMark)
 
 export const isLeft

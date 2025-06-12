@@ -6,19 +6,44 @@ import { faker } from '@faker-js/faker'
 import { GenerateUuid } from "#application/shared/generatos/uuid.generator.ts";
 import { CreateUserCommand } from '#application/users/commands/create_user/create_user_command.ts'
 import { createUserHandler, type CreateUserHandler } from '#application/users/commands/create_user/create_user_handler.ts'
-import { SaveUser, UserExistsByEmail, UserExistsByUuid } from '#application/users/user.repository.ts'
-import { isLeft, isRight, Left } from '#types/either.ts'
-import { EMAIL_IN_USE, FATHER_DOESNT_EXIST } from '#application/users/failures/user.failures.ts'
+import { FindUserByUuid, SaveUser, UserExistsByEmail, UserExistsByUuid } from '#application/users/user.repository.ts'
+import { isLeft, isRight, Left, Right } from '#types/either.ts'
+import { EMAIL_IN_USE, FATHER_DOESNT_EXIST, REQUESTER_NOT_FOUND } from '#application/users/failures/user.failures.ts'
 import { GenSalt, HashString } from '#application/shared/hasher.ts'
-import type { UserEntity } from '#domain/users/entities/user.entity.ts';
+import { UserEntity } from '#domain/users/entities/user.entity.ts';
+import { UserEmail } from '#domain/users/user.email.ts';
+import { UserPassword } from '#domain/users/user.password.ts';
+import { Just, Nothing } from '#types/maybe.ts';
+import type { Failure } from '#types/failure.ts';
+import { CreateUserMeta } from '#application/users/commands/create_user/create_user_meta.ts';
 
 describe ('CreateUserHandler Test', () => {
+  const father_uuid
+  = faker.string.uuid ()
+
   const command : CreateUserCommand
   = CreateUserCommand
       (faker.internet.email ())
       (faker.internet.password ())
       ('Company')
-      (faker.string.uuid ())
+      (father_uuid)
+
+  const requester_uuid
+  = faker.string.uuid ()
+
+  const requester : UserEntity
+  = UserEntity (requester_uuid)
+    (UserEmail (faker.internet.email ()) (false))
+    (UserPassword (faker.string.alpha (12)) (faker.string.alpha (12)))
+    ('Delegate')
+    (father_uuid)
+    (faker.string.uuid ())
+
+  const meta : CreateUserMeta
+  = CreateUserMeta (requester_uuid)
+
+  const findUserByUuid
+  = mock.fn (FindUserByUuid)
 
   const userExistsByEmail
   = mock.fn (UserExistsByEmail)
@@ -41,20 +66,38 @@ describe ('CreateUserHandler Test', () => {
   let handler : CreateUserHandler
 
   beforeEach(() => {
-    userExistsByEmail.mock.mockImplementation
-      (async _ => false)
-
-    userExistsByUuid.mock.mockImplementation
-      (async _ => true)
+    findUserByUuid.mock.mockImplementation (async _ => Just (requester))
+    userExistsByEmail.mock.mockImplementation (async _ => false)
+    userExistsByUuid.mock.mockImplementation (async _ => true)
 
     handler
     = createUserHandler
+        (findUserByUuid)
         (userExistsByEmail)
         (userExistsByUuid)
         (genSalt)
         (hashString)
         (generateUuid)
         (saveUser)
+  })
+
+  it ('should return REQUESTER_NOT_FOUND Failure', async () => {
+    findUserByUuid.mock.mockImplementationOnce (async uuid => {
+      assert.strictEqual (uuid, requester_uuid)
+
+      return Nothing ()
+    })
+
+    const result
+    = await handler (meta) (command)
+
+    assert.strictEqual (isRight (result), true)
+
+    const failure
+    = (result as Right < Failure >).value
+
+    assert.strictEqual (failure, REQUESTER_NOT_FOUND)
+    assert.strictEqual (findUserByUuid.mock.callCount (), 1)
   })
 
   it ('should return EMAIL_IN_USE Failure', async () => {
@@ -65,7 +108,7 @@ describe ('CreateUserHandler Test', () => {
     })
 
     const result
-    = await handler (command)
+    = await handler (meta) (command)
 
     assert.strictEqual (isRight (result), true)
     assert.strictEqual (userExistsByEmail.mock.callCount (), 1)
@@ -80,7 +123,7 @@ describe ('CreateUserHandler Test', () => {
     })
 
     const result
-    = await handler (command)
+    = await handler (meta) (command)
 
     assert.strictEqual (isRight (result), true)
     assert.strictEqual (userExistsByUuid.mock.callCount (), 1)
@@ -123,7 +166,7 @@ describe ('CreateUserHandler Test', () => {
     })
 
     const result
-    = await handler (command)
+    = await handler (meta) (command)
 
     assert.strictEqual (isLeft (result), true)
 

@@ -11,8 +11,11 @@ import { Left, Right, type Either } from "#types/either.ts";
 import type { Failure } from "#types/failure.ts";
 import { isJust } from "#types/maybe.ts";
 
+type ResultType
+= Promise < Either < UserEntity, Failure > >
+
 export type UpdateUserHandler
-= (command : UpdateUserCommand) => Promise < Either < UserEntity, Failure > >
+= (command : UpdateUserCommand) => ResultType
 
 export const UpdateUserHandler
 = (findUserByUuid : FindUserByUuid) =>
@@ -21,11 +24,12 @@ export const UpdateUserHandler
   (saveUser : SaveUser) : UpdateUserHandler =>
   async command =>
   match (await findUserByUuid (command.uuid))
-  (x => isJust (x)) (async just =>  
-                      Left < UserEntity, Failure > (await pipe (just.value)
-                        (user => createUserFromCommandAndUser (genSalt) (hashString) (command) (user))
-                        (saveUser)
-                        (end)))
+  (x => isJust (x)) (async (just) : ResultType =>  
+     (await pipe (just.value)
+      (user => createUserFromCommandAndUser (genSalt) (hashString) (command) (user))
+      (saveUser)
+      (u => Left (u))
+      (end)))
   (otherwise) (Right (USER_NOT_FOUND))
 
 const hashPassword
@@ -52,4 +56,5 @@ const createUserFromCommandAndUser
       ? command.type.value
       : user.type)
     (user.father_uuid)
+    (user.creator_uuid)
 

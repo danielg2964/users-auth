@@ -8,6 +8,7 @@ export type UserEntity
   , password : UserPassword
   , type : string
   , father_uuid : string
+  , creator_uuid : string
   }
 
 export const UserEntity
@@ -15,12 +16,14 @@ export const UserEntity
   (user_email : UserEmail) =>
   (user_password : UserPassword) =>
   (type : string) => 
-  (father_uuid : string) : UserEntity =>
+  (father_uuid : string)  =>
+  (creator_uuid : string) : UserEntity =>
   ({
     ...Entity (uuid)
   , email : user_email
   , password : user_password
   , type
   , father_uuid
+  , creator_uuid
   })
  

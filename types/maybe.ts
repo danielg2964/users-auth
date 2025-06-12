@@ -27,7 +27,7 @@ export const Just
   ValueAndMark (value) (JustMark)
 
 export const isJust
-= < T > (value : unknown) : value is Just < T > =>
+= < T > (value : Maybe < T >) : value is Just < T > =>
   value !== null
   && value !== undefined 
   && typeof value === 'object'

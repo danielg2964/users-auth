@@ -60,11 +60,11 @@ type PredicateCollector < T, R = never >
     ? LastDelegateCollector < T, R >
   : P extends (value : unknown) => value is infer TA
     ? DelegateCollector < T, TA, R >
+  : P extends (value : infer PR extends T) => value is infer PR
+    ? DelegateCollector < T, PR, R >
   : P extends (value : T) => boolean
-    ? P extends (value : infer PR extends T) => value is infer PR
-      ? DelegateCollector < T, PR, R >
-    : DelegateCollector < T, T, R > 
-  : DelegateCollector < T, T, R >
+    ? DelegateCollector < T, T, R > 
+  : never
 
 const predicateCollector
 = < T, R > (value : T) =>

@@ -1,41 +1,53 @@
 import type { GenerateUuid } from "#application/shared/generatos/uuid.generator.ts";
 import type { GenSalt, HashString } from "#application/shared/hasher.ts";
-import { EMAIL_IN_USE, FATHER_DOESNT_EXIST } from "#application/users/failures/user.failures.ts";
-import type { SaveUser, UserExistsByEmail, UserExistsByUuid } from "#application/users/user.repository.ts";
+import { EMAIL_IN_USE, FATHER_DOESNT_EXIST, REQUESTER_NOT_FOUND } from "#application/users/failures/user.failures.ts";
+import type { FindUserByUuid, SaveUser, UserExistsByEmail, UserExistsByUuid } from "#application/users/user.repository.ts";
 import { UserEntity } from "#domain/users/entities/user.entity.ts";
 import { UserEmail } from "#domain/users/user.email.ts";
 import { UserPassword } from "#domain/users/user.password.ts";
+import { match, otherwise } from "#functions/match.ts";
+import { end, pipe } from "#functions/pipe.ts";
 import { Left, Right, type Either } from "#types/either.ts";
 import type { Failure } from "#types/failure.ts";
+import { isJust } from "#types/maybe.ts";
 import type { CreateUserCommand } from "./create_user_command.ts";
+import type { CreateUserMeta } from "./create_user_meta.ts";
+
+type ResultType
+= Promise < Either < UserEntity, Failure > >
 
 export type CreateUserHandler
-= (command : CreateUserCommand) => Promise < Either < UserEntity, Failure > >
+= (meta: CreateUserMeta) =>
+  (command : CreateUserCommand) => ResultType 
 
 export const createUserHandler
-= (userExistsByEmail : UserExistsByEmail) =>
+= (findUserByUuid : FindUserByUuid) =>
+  (userExistsByEmail : UserExistsByEmail) =>
   (userExistsByUuid : UserExistsByUuid) =>
   (genSalt : GenSalt) =>
   (hashString : HashString) =>
   (generateUuid : GenerateUuid) =>
   (saveUser : SaveUser) : CreateUserHandler =>
-  async command =>
-  await userExistsByEmail (command.email) === false
+  meta => async command =>
+  match (await findUserByUuid (meta.requester_uuid))
+  (x => isJust (x)) (async (just) : ResultType => 
+  await userExistsByEmail (command.email) == false
   ? await userExistsByUuid (command.father_uuid)
-    ? Left (await saveUser
-          (UserEntity (generateUuid ())
-          (UserEmail (command.email) (false))
-          (createUserPassword (command.password)
-            (genSalt ()) 
-            (hashString))
-          (command.type)
-          (command.father_uuid)))
+    ? await pipe (UserEntity)
+        (c => c (generateUuid ()))
+        (c => c (UserEmail (command.email) (false)))
+        (c => c (pipe (genSalt ()) 
+                 (salt => UserPassword (salt)
+                   (hashString (salt)
+                   (command.password)))
+                 (end)))
+        (c => c (command.type))
+        (c => c (command.father_uuid))
+        (c => c (just.value.uuid))
+        (saveUser)
+        (u => Left (u))
+        (end)
     : Right (FATHER_DOESNT_EXIST)
-  : Right (EMAIL_IN_USE)
-
-const createUserPassword
-= (plain : string) =>
-  (salt : string) =>
-  (hashString : HashString) : UserPassword =>
-  UserPassword (hashString (salt) (plain)) (salt)
+  : Right (EMAIL_IN_USE))
+  (otherwise) (Right (REQUESTER_NOT_FOUND))
 

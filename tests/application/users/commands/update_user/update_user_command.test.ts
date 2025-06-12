@@ -25,6 +25,7 @@ describe ('UpdateUserHandler Test', () => {
     (UserPassword (faker.string.alphanumeric (15)) (faker.string.alphanumeric (15)))
     ('Delegate')
     (faker.string.uuid ())
+    (faker.string.uuid ())
 
   const command : UpdateUserCommand
   = UpdateUserCommand (user_uuid)
