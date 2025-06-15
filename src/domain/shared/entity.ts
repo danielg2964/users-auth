@@ -1,11 +1,17 @@
-export type Entity
-= {
-    uuid : string
-  }
+import type { Marked } from "#types/marked.ts"
+import type { Uuid } from "./uuid.ts"
 
-export const Entity
-= (uuid : string) =>
+export type Entity < TMark extends symbol, TUuidMark extends symbol, TUuid extends Uuid < TUuidMark >, TShape >
+= Marked < TMark, TShape & { uuid : TUuid } >
+
+export const Entity 
+=< TMark extends symbol > (mark : TMark) =>
+  < TUuidMark extends symbol, TUuid extends Uuid < TUuidMark > > (uuid : TUuid) =>
+  < TShape > (shape : TShape)
+    : Entity < TMark, TUuidMark, TUuid, TShape > =>
   ({
-    uuid
+    mark
+  , uuid
+  , ...shape
   })
 

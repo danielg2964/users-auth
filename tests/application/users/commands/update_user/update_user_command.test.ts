@@ -14,18 +14,20 @@ import { isLeft, isRight, Left, Right } from '#types/either.ts'
 import { GenSalt, HashString } from '#application/shared/hasher.ts'
 import { USER_NOT_FOUND } from '#application/users/failures/user.failures.ts'
 import type { Failure } from '#types/failure.ts'
+import { UserType } from '#domain/users/user.type.ts'
+import { UserUuid } from '#domain/users/user.uuid.ts'
 
 describe ('UpdateUserHandler Test', () => {
   const user_uuid : string
   = faker.string.uuid ()
 
   const user_to_update : UserEntity
-  = UserEntity (user_uuid)
+  = UserEntity (UserUuid (user_uuid))
     (UserEmail (faker.internet.email ()) (true))
     (UserPassword (faker.string.alphanumeric (15)) (faker.string.alphanumeric (15)))
-    ('Delegate')
-    (faker.string.uuid ())
-    (faker.string.uuid ())
+    (UserType ('Delegate'))
+    (UserUuid (faker.string.uuid ()))
+    (UserUuid (faker.string.uuid ()))
 
   const command : UpdateUserCommand
   = UpdateUserCommand (user_uuid)
@@ -98,7 +100,7 @@ describe ('UpdateUserHandler Test', () => {
     let user_saved : UserEntity
 
     saveUser.mock.mockImplementation (async user => {
-      assert.strictEqual (user.uuid, command.uuid)
+      assert.strictEqual (user.uuid.value, command.uuid)
 
       assert.strictEqual (user.email.value, (command.email as Just < string >).value)
       assert.strictEqual (user.email.is_verified, false)
@@ -106,9 +108,10 @@ describe ('UpdateUserHandler Test', () => {
       assert.strictEqual (user.password.salt, salt)
       assert.strictEqual (user.password.hash, hash)
 
-      assert.strictEqual (user.type, (command.type as Just < string >).value)
+      assert.strictEqual (user.type.value, (command.type as Just < string >).value)
 
-      assert.strictEqual (user.father_uuid, user_to_update.father_uuid)
+      assert.strictEqual (user.father_uuid.value, user_to_update.father_uuid.value)
+      assert.strictEqual (user.creator_uuid.value, user_to_update.creator_uuid.value)
 
       user_saved = user
 

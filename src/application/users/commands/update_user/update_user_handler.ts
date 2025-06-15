@@ -5,6 +5,7 @@ import type { FindUserByUuid, SaveUser } from "#application/users/user.repositor
 import { UserEntity } from "#domain/users/entities/user.entity.ts";
 import { UserEmail } from "#domain/users/user.email.ts";
 import { UserPassword } from "#domain/users/user.password.ts";
+import { UserType } from "#domain/users/user.type.ts";
 import { match, otherwise } from "#functions/match.ts";
 import { end, pipe } from "#functions/pipe.ts";
 import { Left, Right, type Either } from "#types/either.ts";
@@ -53,7 +54,7 @@ const createUserFromCommandAndUser
           (hashString)
       : user.password)
     (isJust (command.type)
-      ? command.type.value
+      ? UserType (command.type.value)
       : user.type)
     (user.father_uuid)
     (user.creator_uuid)

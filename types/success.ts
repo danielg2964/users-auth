@@ -7,11 +7,11 @@ type SuccessMark
 = typeof SuccessMark
 
 export type Success < T >
-= Marked < SuccessMark > & {
+= Marked < SuccessMark, {
     get value (): T
   , get message (): string
   , get code (): string
-  }
+  } >
 
 export const Success : < T > (value : T) => (message : string) => (code : string) => Success < T >
 = < T > (value : T) =>

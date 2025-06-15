@@ -16,6 +16,8 @@ import { UserPassword } from '#domain/users/user.password.ts';
 import { Just, Nothing } from '#types/maybe.ts';
 import type { Failure } from '#types/failure.ts';
 import { CreateUserMeta } from '#application/users/commands/create_user/create_user_meta.ts';
+import { UserType } from '#domain/users/user.type.ts';
+import { UserUuid } from '#domain/users/user.uuid.ts';
 
 describe ('CreateUserHandler Test', () => {
   const father_uuid
@@ -32,12 +34,12 @@ describe ('CreateUserHandler Test', () => {
   = faker.string.uuid ()
 
   const requester : UserEntity
-  = UserEntity (requester_uuid)
+  = UserEntity (UserUuid (requester_uuid))
     (UserEmail (faker.internet.email ()) (false))
     (UserPassword (faker.string.alpha (12)) (faker.string.alpha (12)))
-    ('Delegate')
-    (father_uuid)
-    (faker.string.uuid ())
+    (UserType ('Delegate'))
+    (UserUuid (father_uuid))
+    (UserUuid (faker.string.uuid ()))
 
   const meta : CreateUserMeta
   = CreateUserMeta (requester_uuid)
@@ -154,11 +156,11 @@ describe ('CreateUserHandler Test', () => {
     let user_saved : UserEntity
 
     saveUser.mock.mockImplementation (async user => {
-      assert.strictEqual (user.uuid, uuid)
+      assert.strictEqual (user.uuid.value, uuid)
       assert.strictEqual (user.email.value, command.email)
       assert.strictEqual (user.email.is_verified, false)
-      assert.strictEqual (user.type, command.type)
-      assert.strictEqual (user.father_uuid, command.father_uuid)
+      assert.strictEqual (user.type.value, command.type)
+      assert.strictEqual (user.father_uuid.value, command.father_uuid)
 
       user_saved = user
 

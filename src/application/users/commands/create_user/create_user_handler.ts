@@ -5,6 +5,8 @@ import type { FindUserByUuid, SaveUser, UserExistsByEmail, UserExistsByUuid } fr
 import { UserEntity } from "#domain/users/entities/user.entity.ts";
 import { UserEmail } from "#domain/users/user.email.ts";
 import { UserPassword } from "#domain/users/user.password.ts";
+import { UserType } from "#domain/users/user.type.ts";
+import { UserUuid } from "#domain/users/user.uuid.ts";
 import { match, otherwise } from "#functions/match.ts";
 import { end, pipe } from "#functions/pipe.ts";
 import { Left, Right, type Either } from "#types/either.ts";
@@ -32,22 +34,22 @@ export const createUserHandler
   match (await findUserByUuid (meta.requester_uuid))
   (x => isJust (x)) (async (just) : ResultType => 
   await userExistsByEmail (command.email) == false
-  ? await userExistsByUuid (command.father_uuid)
-    ? await pipe (UserEntity)
-        (c => c (generateUuid ()))
-        (c => c (UserEmail (command.email) (false)))
-        (c => c (pipe (genSalt ()) 
-                 (salt => UserPassword (salt)
-                   (hashString (salt)
-                   (command.password)))
-                 (end)))
-        (c => c (command.type))
-        (c => c (command.father_uuid))
-        (c => c (just.value.uuid))
-        (saveUser)
-        (u => Left (u))
-        (end)
-    : Right (FATHER_DOESNT_EXIST)
-  : Right (EMAIL_IN_USE))
+    ? await userExistsByUuid (command.father_uuid)
+      ? await pipe (UserEntity)
+          (c => c (UserUuid (generateUuid ())))
+          (c => c (UserEmail (command.email) (false)))
+          (c => c (pipe (genSalt ()) 
+                   (salt => UserPassword (salt)
+                     (hashString (salt)
+                     (command.password)))
+                   (end)))
+          (c => c (UserType (command.type)))
+          (c => c (UserUuid (command.father_uuid)))
+          (c => c (just.value.uuid))
+          (saveUser)
+          (u => Left (u))
+          (end)
+      : Right (FATHER_DOESNT_EXIST)
+    : Right (EMAIL_IN_USE))
   (otherwise) (Right (REQUESTER_NOT_FOUND))
 

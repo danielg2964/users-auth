@@ -1,5 +1,5 @@
-export type Marked < TMarked extends symbol >
-= {
-    get mark () : TMarked
+export type Marked < TMark extends symbol, T >
+= T & {
+    get mark () : TMark,
   }
 

@@ -6,10 +6,13 @@ const ValueAndMarkMark : unique symbol
 export type ValueAndMarkMark
 = typeof ValueAndMarkMark
 
-export type ValueAndMark < TValue, TMark extends symbol >
-= Marked < TMark > & {
+type Shape < TValue >
+= {
     get value () : TValue
   }
+
+export type ValueAndMark < TValue, TMark extends symbol >
+= Marked < TMark, Shape < TValue > >
 
 export const ValueAndMark
 = < TValue > (value : TValue) =>
@@ -22,9 +25,9 @@ export const ValueAndMark
 export const isValueAndMark
 = < TValue, TMark extends symbol > 
   (mark : TMark) =>
-  < TValueAndMark extends ValueAndMark < TValue, TMark > > (marked : Marked < TMark >) : marked is TValueAndMark =>
+  < TValueAndMark extends ValueAndMark < TValue, TMark > > (marked : unknown) : marked is TValueAndMark =>
   marked !== null 
   && marked !== undefined 
   && typeof marked === 'object'
-  && marked.mark === mark 
+  && (marked as ValueAndMark < TValue, TMark >).mark === mark 
 

@@ -8,10 +8,10 @@ type ListMark
 = typeof ListMark
 
 export type List < T >
-= Marked < ListMark > & {
+= Marked < ListMark, {
     get head () : T
   , get tail () : Maybe < List < T > >
-  }
+  } >
 
 const createList : < T > (head : T) => (tail : Maybe < List < T > >) => List < T >
 = < T > (head : T) =>

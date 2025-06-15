@@ -7,10 +7,10 @@ type PairMark
 = typeof PairMark
 
 export type Pair < T, B >
-= Marked < PairMark > & {
+= Marked < PairMark, {
     get left () : T
   , get right () : B
-  }
+  } >
 
 export const Pair 
 = < T > (left : T) =>
