@@ -3,19 +3,21 @@ import assert from 'node:assert'
 
 import { faker } from '@faker-js/faker'
 
-import { GenerateUuid } from "#application/shared/generatos/uuid.generator.ts";
-import { CreateUserCommand } from '#application/users/commands/create_user/create_user_command.ts'
-import { createUserHandler, type CreateUserHandler } from '#application/users/commands/create_user/create_user_handler.ts'
-import { FindUserByUuid, SaveUser, UserExistsByEmail, UserExistsByUuid } from '#application/users/user.repository.ts'
+import { Just, Nothing } from '#types/maybe.ts';
+import type { Failure } from '#types/failure.ts';
 import { isLeft, isRight, Left, Right } from '#types/either.ts'
+
+import { CreateUserCommand } from '#application/users/commands/create_user/create_user.command.ts'
+import { CreateUserMeta } from '#application/users/commands/create_user/create_user.meta.ts';
+import { CreateUserHandler } from '#application/users/commands/create_user/create_user.handler.ts'
+
+import { GenerateUuid } from "#application/shared/generatos/uuid.generator.ts";
+import { FindUserByUuid, SaveUser, UserExistsByEmail, UserExistsByUuid } from '#application/users/user.repository.ts'
 import { EMAIL_IN_USE, FATHER_DOESNT_EXIST, REQUESTER_NOT_FOUND } from '#application/users/failures/user.failures.ts'
 import { GenSalt, HashString } from '#application/shared/hasher.ts'
 import { UserEntity } from '#domain/users/entities/user.entity.ts';
 import { UserEmail } from '#domain/users/user.email.ts';
 import { UserPassword } from '#domain/users/user.password.ts';
-import { Just, Nothing } from '#types/maybe.ts';
-import type { Failure } from '#types/failure.ts';
-import { CreateUserMeta } from '#application/users/commands/create_user/create_user_meta.ts';
 import { UserType } from '#domain/users/user.type.ts';
 import { UserUuid } from '#domain/users/user.uuid.ts';
 
@@ -42,7 +44,7 @@ describe ('CreateUserHandler Test', () => {
     (UserUuid (faker.string.uuid ()))
 
   const meta : CreateUserMeta
-  = CreateUserMeta (requester_uuid)
+  = CreateUserMeta (UserUuid (requester_uuid))
 
   const findUserByUuid
   = mock.fn (FindUserByUuid)
@@ -73,7 +75,7 @@ describe ('CreateUserHandler Test', () => {
     userExistsByUuid.mock.mockImplementation (async _ => true)
 
     handler
-    = createUserHandler
+    = CreateUserHandler
         (findUserByUuid)
         (userExistsByEmail)
         (userExistsByUuid)

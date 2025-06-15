@@ -1,9 +1,13 @@
 import { beforeEach, describe, it, mock } from 'node:test'
 import assert from 'node:assert'
-import { GetUserHandler } from '#application/users/queries/get_user/get_user_handler.ts'
-import { FindUserByUuid, UserExistsByUuid } from '#application/users/user.repository.ts'
+
 import { faker } from '@faker-js/faker'
-import { GetUserQuery } from '#application/users/queries/get_user/get_user_query.ts'
+
+import { GetUserHandler } from '#application/users/queries/get_user/get_user.handler.ts'
+import { GetUserQuery } from '#application/users/queries/get_user/get_user.query.ts'
+import { GetUserMeta } from '#application/users/queries/get_user/get_user.meta.ts'
+
+import { FindUserByUuid, UserExistsByUuid } from '#application/users/user.repository.ts'
 import { Just, Nothing } from '#types/maybe.ts'
 import { isLeft, isRight, Left, Right } from '#types/either.ts'
 import type { Failure } from '#types/failure.ts'
@@ -11,7 +15,6 @@ import { REQUESTER_NOT_FOUND, USER_NOT_FOUND } from '#application/users/failures
 import { UserEntity } from '#domain/users/entities/user.entity.ts'
 import { UserEmail } from '#domain/users/user.email.ts'
 import { UserPassword } from '#domain/users/user.password.ts'
-import { GetUserMeta } from '#application/users/queries/get_user/get_user_meta.ts'
 import { UserUuid } from '#domain/users/user.uuid.ts'
 import { UserType } from '#domain/users/user.type.ts'
 

@@ -1,5 +1,6 @@
+import type { UpdateUserCommand } from "#application/users/commands/update_user/update_user.command.ts";
+
 import type { GenSalt, HashString } from "#application/shared/hasher.ts";
-import type { UpdateUserCommand } from "#application/users/commands/update_user/update_user_command.ts";
 import { USER_NOT_FOUND } from "#application/users/failures/user.failures.ts";
 import type { FindUserByUuid, SaveUser } from "#application/users/user.repository.ts";
 import { UserEntity } from "#domain/users/entities/user.entity.ts";

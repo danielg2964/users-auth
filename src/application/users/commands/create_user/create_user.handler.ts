@@ -1,3 +1,6 @@
+import type { CreateUserCommand } from "./create_user.command.ts";
+import type { CreateUserMeta } from "./create_user.meta.ts";
+
 import type { GenerateUuid } from "#application/shared/generatos/uuid.generator.ts";
 import type { GenSalt, HashString } from "#application/shared/hasher.ts";
 import { EMAIL_IN_USE, FATHER_DOESNT_EXIST, REQUESTER_NOT_FOUND } from "#application/users/failures/user.failures.ts";
@@ -12,8 +15,6 @@ import { end, pipe } from "#functions/pipe.ts";
 import { Left, Right, type Either } from "#types/either.ts";
 import type { Failure } from "#types/failure.ts";
 import { isJust } from "#types/maybe.ts";
-import type { CreateUserCommand } from "./create_user_command.ts";
-import type { CreateUserMeta } from "./create_user_meta.ts";
 
 type ResultType
 = Promise < Either < UserEntity, Failure > >
@@ -22,7 +23,7 @@ export type CreateUserHandler
 = (meta: CreateUserMeta) =>
   (command : CreateUserCommand) => ResultType 
 
-export const createUserHandler
+export const CreateUserHandler
 = (findUserByUuid : FindUserByUuid) =>
   (userExistsByEmail : UserExistsByEmail) =>
   (userExistsByUuid : UserExistsByUuid) =>
@@ -31,7 +32,7 @@ export const createUserHandler
   (generateUuid : GenerateUuid) =>
   (saveUser : SaveUser) : CreateUserHandler =>
   meta => async command =>
-  match (await findUserByUuid (meta.requester_uuid))
+  match (await findUserByUuid (meta.requester_uuid.value))
   (x => isJust (x)) (async (just) : ResultType => 
   await userExistsByEmail (command.email) == false
     ? await userExistsByUuid (command.father_uuid)

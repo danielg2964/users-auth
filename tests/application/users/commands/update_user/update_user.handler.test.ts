@@ -3,9 +3,10 @@ import assert from 'node:assert'
 
 import { faker } from '@faker-js/faker'
 
+import { UpdateUserCommand } from '#application/users/commands/update_user/update_user.command.ts'
+import { UpdateUserHandler } from '#application/users/commands/update_user/update_user.handler.ts'
+
 import { FindUserByUuid, SaveUser } from '#application/users/user.repository.ts'
-import { UpdateUserCommand } from '#application/users/commands/update_user/update_user_command.ts'
-import { UpdateUserHandler } from '#application/users/commands/update_user/update_user_handler.ts'
 import { Just, Nothing } from '#types/maybe.ts'
 import { UserEntity } from '#domain/users/entities/user.entity.ts'
 import { UserEmail } from '#domain/users/user.email.ts'
