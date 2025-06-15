@@ -20,10 +20,9 @@ export const GetUserHandler
 = (userExistsByUuid : UserExistsByUuid) =>
   (findUserByUuid : FindUserByUuid) : GetUserHandler =>
   meta => async query =>
-  match (await userExistsByUuid (meta.requester_uuid))
-  (r => r === true) (async _ =>
-    match (await findUserByUuid (query.user_uuid))
+  await userExistsByUuid (meta.requester_uuid.value) === false
+  ? Right (REQUESTER_NOT_FOUND)
+  : match (await findUserByUuid (query.user_uuid))
     (m => isJust (m)) (j => Left (j.value))
-    (otherwise) (Right (USER_NOT_FOUND)))
-  (otherwise) (Right (REQUESTER_NOT_FOUND))
+    (otherwise) (Right (USER_NOT_FOUND))
  

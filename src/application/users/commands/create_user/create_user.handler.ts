@@ -33,20 +33,18 @@ export const CreateUserHandler
   (saveUser : SaveUser) : CreateUserHandler =>
   meta => async command =>
   match (await findUserByUuid (meta.requester_uuid.value))
-  (x => isJust (x)) (async (just) : ResultType => 
+  (x => isJust (x)) (async (justUser) : ResultType => 
   await userExistsByEmail (command.email) == false
     ? await userExistsByUuid (command.father_uuid)
       ? await pipe (UserEntity)
           (c => c (UserUuid (generateUuid ())))
           (c => c (UserEmail (command.email) (false)))
           (c => c (pipe (genSalt ()) 
-                   (salt => UserPassword (salt)
-                     (hashString (salt)
-                     (command.password)))
+                   (salt => UserPassword (salt) (hashString (salt) (command.password)))
                    (end)))
           (c => c (UserType (command.type)))
           (c => c (UserUuid (command.father_uuid)))
-          (c => c (just.value.uuid))
+          (c => c (justUser.value.uuid))
           (saveUser)
           (u => Left (u))
           (end)

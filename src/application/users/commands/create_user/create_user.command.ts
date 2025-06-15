@@ -27,3 +27,9 @@ export const CreateUserCommand
   , father_uuid
   })
 
+export const isCreateUserCommand
+= (value : unknown) : value is CreateUserCommand =>
+  value !== null
+  && value !== undefined
+  && (value as CreateUserCommand).mark === CreateUserCommandMark
+

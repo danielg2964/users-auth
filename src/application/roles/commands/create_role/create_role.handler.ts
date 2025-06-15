@@ -31,10 +31,11 @@ export const CreateRoleHandler
   ? Right (REQUESTER_NOT_FOUND)
   : await roleExistsByName (command.name) === true
     ? Right (ROLE_NAME_IN_USE)
-    : Left (await pipe (RoleEntity)
+    : (await pipe (RoleEntity)
       (c => c (RoleUuid (generateUuid ())))
       (c => c (RoleName (command.name)))
       (c => c (RoleLevel (command.level)))
       (saveRole)
+      (role => Left (role))
       (end))
-               
+

@@ -19,3 +19,9 @@ export const CreateUserMeta
   , requester_uuid
   })
 
+export const isCreateUserMeta
+= (value : unknown) : value is CreateUserMeta =>
+  value !== null
+  && value !== undefined
+  && (value as CreateUserMeta).mark === CreateUserMetaMark
+

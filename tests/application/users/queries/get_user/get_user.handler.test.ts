@@ -31,7 +31,7 @@ describe ('GetUserHandler Test', () => {
   = faker.string.uuid ()
 
   const meta : GetUserMeta
-  = GetUserMeta (requester_uuid)
+  = GetUserMeta (UserUuid (requester_uuid))
 
   const user_uuid
   = faker.string.uuid ()
