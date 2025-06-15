@@ -12,7 +12,7 @@ export type CreateRoleCommand
   , level : number
   } >
   
-export const CreateRoleCommandk
+export const CreateRoleCommand
 = (name : string) =>
   (level : number) : CreateRoleCommand =>
   ({

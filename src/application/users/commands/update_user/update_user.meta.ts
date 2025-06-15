@@ -12,7 +12,7 @@ export type UpdateUserMeta
     requester_uuid : UserUuid
   } >
 
-export const UpdaateUserMeta
+export const UpdateUserMeta
 = (requester_uuid : UserUuid) : UpdateUserMeta =>
   ({
     mark : UpdateUserMetaMark

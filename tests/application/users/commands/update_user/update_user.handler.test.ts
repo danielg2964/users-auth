@@ -5,15 +5,16 @@ import { faker } from '@faker-js/faker'
 
 import { UpdateUserCommand } from '#application/users/commands/update_user/update_user.command.ts'
 import { UpdateUserHandler } from '#application/users/commands/update_user/update_user.handler.ts'
+import { UpdateUserMeta } from '#application/users/commands/update_user/update_user.meta.ts'
 
-import { FindUserByUuid, SaveUser } from '#application/users/user.repository.ts'
+import { FindUserByUuid, SaveUser, UserExistsByUuid } from '#application/users/user.repository.ts'
 import { Just, Nothing } from '#types/maybe.ts'
 import { UserEntity } from '#domain/users/entities/user.entity.ts'
 import { UserEmail } from '#domain/users/user.email.ts'
 import { UserPassword } from '#domain/users/user.password.ts'
 import { isLeft, isRight, Left, Right } from '#types/either.ts'
 import { GenSalt, HashString } from '#application/shared/hasher.ts'
-import { USER_NOT_FOUND } from '#application/users/failures/user.failures.ts'
+import { REQUESTER_NOT_FOUND, USER_NOT_FOUND } from '#application/users/failures/user.failures.ts'
 import type { Failure } from '#types/failure.ts'
 import { UserType } from '#domain/users/user.type.ts'
 import { UserUuid } from '#domain/users/user.uuid.ts'
@@ -30,11 +31,20 @@ describe ('UpdateUserHandler Test', () => {
     (UserUuid (faker.string.uuid ()))
     (UserUuid (faker.string.uuid ()))
 
+  const requester_uuid : string
+  = faker.string.uuid ()
+
+  const meta : UpdateUserMeta
+  = UpdateUserMeta (UserUuid (requester_uuid))
+
   const command : UpdateUserCommand
   = UpdateUserCommand (user_uuid)
     (Just (faker.internet.email ()))
     (Just (faker.internet.password ()))
     (Just ('Company'))
+
+  let userExistsByUuid
+  = mock.fn (UserExistsByUuid)
 
   let findUserByUuid
   = mock.fn (FindUserByUuid)
@@ -51,6 +61,12 @@ describe ('UpdateUserHandler Test', () => {
   let handler : UpdateUserHandler
 
   beforeEach(() => {
+    userExistsByUuid.mock.mockImplementation (async uuid => {
+      assert.strictEqual (uuid, requester_uuid)
+
+      return true
+    })
+
     findUserByUuid.mock.mockImplementation (async uuid => {
       assert.strictEqual (uuid, command.uuid)
 
@@ -58,10 +74,31 @@ describe ('UpdateUserHandler Test', () => {
     })
 
     handler
-    = UpdateUserHandler (findUserByUuid)
+    = UpdateUserHandler 
+        (userExistsByUuid)
+        (findUserByUuid)
         (genSalt)
         (hashString)
         (saveUser)
+  })
+
+  it ('should return REQUESTER_NOT_FOUND Failure', async () => {
+    userExistsByUuid.mock.mockImplementationOnce (async uuid => {
+      assert.strictEqual (uuid, requester_uuid)
+
+      return false
+    })
+
+    const result
+    = await handler (meta) (command)
+
+    assert.strictEqual (isRight (result), true)
+
+    const right
+    = result as Right < Failure >
+
+    assert.strictEqual (right.value, REQUESTER_NOT_FOUND)
+    assert.strictEqual (userExistsByUuid.mock.callCount (), 1)
   })
 
   it ('should return USER_NOT_FOUND Failure', async () => {
@@ -72,7 +109,7 @@ describe ('UpdateUserHandler Test', () => {
     })
 
     const result
-    = await handler (command)
+    = await handler (meta) (command)
 
     assert.strictEqual (isRight (result), true)
 
@@ -104,6 +141,7 @@ describe ('UpdateUserHandler Test', () => {
       assert.strictEqual (user.uuid.value, command.uuid)
 
       assert.strictEqual (user.email.value, (command.email as Just < string >).value)
+
       assert.strictEqual (user.email.is_verified, false)
 
       assert.strictEqual (user.password.salt, salt)
@@ -120,7 +158,7 @@ describe ('UpdateUserHandler Test', () => {
     })
 
     const result
-    = await handler (command)
+    = await handler (meta) (command)
 
     assert.strictEqual (saveUser.mock.callCount (), 1)
 
@@ -133,5 +171,4 @@ describe ('UpdateUserHandler Test', () => {
     assert.deepStrictEqual (left.value, user_saved!)
   })
 })
-
 
